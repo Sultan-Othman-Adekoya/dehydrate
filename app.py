@@ -1,33 +1,41 @@
-
 import streamlit as st
 from PIL import Image
 import numpy as np
-import cv2
 from ultralytics import YOLO
 
-# Load YOLOv8 model (pretrained or custom)
-model = YOLO("yolov8n.pt")  # Replace with 'best.pt' if you trained a custom model
+# Load YOLO model
+model = YOLO("yolov8n.pt")  # Replace with 'best.pt' if using a custom-trained model
 
-st.title("🥕 DehydLTE Vegetable Detector")
-st.write("Upload an image to detect vegetables like peppers with bounding boxes and accuracy.")
+st.set_page_config(page_title="DehydALTE", layout="centered")
+st.title("DehydALTE")
+st.markdown("Detect vegetables.")
 
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+# Select input type
+option = st.radio("Select input type:", ["📸 Capture from Webcam", "🖼 Upload an Image"])
 
-if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert("RGB")
+image = None
+
+if option == "📸 Capture from Webcam":
+    cam_input = st.camera_input("Take a picture")
+    if cam_input is not None:
+        image = Image.open(cam_input).convert("RGB")
+
+elif option == "🖼 Upload an Image":
+    uploaded_file = st.file_uploader("Upload an image", type=["jpg", "jpeg", "png"])
+    if uploaded_file is not None:
+        image = Image.open(uploaded_file).convert("RGB")
+
+# Run detection
+if image is not None:
+    st.subheader("Detected Vegetables:")
     image_np = np.array(image)
-
-    # Inference
     results = model(image_np)
-
-    # Plot results
     res_plotted = results[0].plot()
-    st.image(res_plotted, caption="Detected Vegetables", use_column_width=True)
+    st.image(res_plotted, caption="Vegetable Detection", use_column_width=True)
 
-    # Show predictions
-    st.subheader("Detections:")
     for box in results[0].boxes:
         cls_id = int(box.cls[0])
         label = model.names[cls_id]
         confidence = float(box.conf[0]) * 100
         st.write(f"🟩 {label} - {confidence:.2f}%")
+
