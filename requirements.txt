@@ -1,4 +1,7 @@
-ultralytics
 streamlit
-opencv-python
-pillow
+streamlit-webrtc
+ultralytics==8.1.33
+opencv-python-headless==4.8.0.76
+av
+Pillow
+numpy
